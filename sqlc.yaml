@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - schema : "./db/migration"
+    queries: "./db/query"
+    engine: "postgresql"
+    strict_function_checks: true
+    gen:
+      go:
+        out: "./db/sqlc"
