@@ -40,14 +40,14 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 }
 
 // provides all of parameter of transaction
-type TranferParams struct {
+type TransferParams struct {
 	FromAccountID int64 `json:"from_account_id"`
 	ToAccountID   int64 `json:"to_account_id"`
 	Amount        int64 `json:"amount"`
 }
 
 // provides result of a transaction
-type TranferResult struct {
+type TransferResult struct {
 	Transfer    Transfer `json:"transfer"`
 	FromAccount Account  `json:"from_account"`
 	ToAccount   Account  `json:"to_account"`
@@ -63,11 +63,12 @@ type TranferResult struct {
 // Step 4: Subtract 10 from the balance of A
 // Step 5: Add 10 to the balance of B
 // Step 1
-func (store *Store) Transfer(ctx context.Context, arg TranferParams) (TranferResult, error) {
-	var result TranferResult
+func (store *Store) Transfer(ctx context.Context, arg TransferParams) (TransferResult, error) {
+	var result TransferResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
+
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
 			ToAccountID:   arg.ToAccountID,
@@ -96,6 +97,47 @@ func (store *Store) Transfer(ctx context.Context, arg TranferParams) (TranferRes
 		}
 		//Step 4: Note that step 4 and step 5 will require locking protocol
 
+		if arg.FromAccountID < arg.ToAccountID { // This for avoiding deadlock
+			account1, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
+
+			if err != nil {
+				return err
+			}
+			result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+				ID:      arg.FromAccountID,
+				Balance: account1.Balance - arg.Amount,
+			})
+
+			account2, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
+
+			if err != nil {
+				return err
+			}
+			result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+				ID:      arg.FromAccountID,
+				Balance: account2.Balance + arg.Amount,
+			})
+		} else {
+			account2, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
+
+			if err != nil {
+				return err
+			}
+			result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+				ID:      arg.FromAccountID,
+				Balance: account2.Balance + arg.Amount,
+			})
+
+			account1, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
+
+			if err != nil {
+				return err
+			}
+			result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+				ID:      arg.FromAccountID,
+				Balance: account1.Balance - arg.Amount,
+			})
+		}
 		return nil
 	})
 	return result, err
