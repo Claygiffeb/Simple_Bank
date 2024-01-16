@@ -57,6 +57,18 @@ Detail implementation in the util package (password.go)
 
 ## 8. Authentication: Token-based authentication
 
+In this project, we use JWT v5 for authentication with login user and password, more details on Security is in the Appendix
+
+## 9. Middleware Authentication and Authorization rules
+
+In banking systems, it is crucial that the authorization rules are forced (so that Alice can not tranfer money from Bod to Alice?). This project create a middleware to handle that business logic.
+![Alt text](image-20.png)
+![Alt text](image-21.png)
+
+We will implement role authorization to enforce four below rules:
+![Alt text](image-22.png)
+
+
 ## Apendix: Security - SSL/TLS overview
 
 ![Alt text](image.png)

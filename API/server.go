@@ -16,7 +16,7 @@ type Server struct {
 	config     util.Config
 	store      db.Store
 	router     *gin.Engine
-	tokenMaker token.JWTMaker
+	tokenMaker *token.JWTMaker
 }
 
 // NewServer creates a new Server and set up routing
@@ -28,7 +28,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 
 	server := &Server{
 		store:      store,
-		tokenMaker: *tokenMaker,
+		tokenMaker: tokenMaker,
 		config:     config,
 	}
 
@@ -42,12 +42,15 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
-	router.POST("/users", server.CreateUser)         // API for creating users
-	router.POST("/users/login", server.loginUser)    // API for login user
-	router.POST("/accounts", server.CreateAccount)   // API for creating accounts
-	router.GET("/accounts/:id", server.GetAccount)   // API for getting accounts
-	router.GET("/accounts", server.ListAccounts)     // API for listing accounts
-	router.POST("/transfers", server.CreateTransfer) // API for creating transfer
+	router.POST("/users", server.CreateUser)      // API for creating users
+	router.POST("/users/login", server.loginUser) // API for login user
+
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+
+	authRoutes.POST("/accounts", server.CreateAccount)   // API for creating accounts
+	authRoutes.GET("/accounts/:id", server.GetAccount)   // API for getting accounts
+	authRoutes.GET("/accounts", server.ListAccounts)     // API for listing accounts
+	authRoutes.POST("/transfers", server.CreateTransfer) // API for creating transfer
 	server.router = router
 }
 func (server *Server) Start(address string) error {
