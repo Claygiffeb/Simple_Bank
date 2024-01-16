@@ -10,7 +10,12 @@ Technologies
 - Programming languages: Golang
 - Postgres, Redis, Gin, gRPC, Docker, Kubernetes, AWS, CI/CD
 ## 2. Database Design
-![Alt text](image.png)
+![Alt text](image-1.png)
+
+- accounts: Table of accounts
+- entries: Entries in transaction
+- transfers: Transfers between two accounts
+- users: owners of the accounts, one user can have many accounts, which have different currencies. To enforce this constraint, we will create a unique composite index. 
 
 ## 3. Database Transaction
 
@@ -24,3 +29,16 @@ For example: The transaction transfer 10 USD form account A to account B will co
 - Step 5: Add 10 to the balance of B
 
 Note the Step 4 and Step will require locking protocol
+
+4. Testting
+Here we use MockDB. Mock databases are used to mimic the behavior of real databases without actually interacting with a live database system. This is advantageous in testing scenarios to ensure that tests are predictable, repeatable, and independent of external dependencies.
+
+We will use reflection mode here
+
+5. Validator
+
+Since we don't want to hardcode the validation of requests (in the future, there might be many currency and we need to include them everywhere in the required configuration). 
+
+6. Database Migrations
+ 
+ Since we can modify the databases many times in the future, it's not good to change the database migration files, we need to create a new migration file for each migration.

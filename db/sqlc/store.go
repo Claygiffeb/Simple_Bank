@@ -6,22 +6,27 @@ import (
 	"fmt"
 )
 
+type Store interface {
+	Transfer(ctx context.Context, arg TransferParams) (TransferResult, error)
+	Querier
+}
+
 // provides all functions to execute db queries and transactions
-type Store struct {
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
 // creates a new Store
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
 }
 
 // excecutes a function with a database transaction
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -63,7 +68,7 @@ type TransferResult struct {
 // Step 4: Subtract 10 from the balance of A
 // Step 5: Add 10 to the balance of B
 // Step 1
-func (store *Store) Transfer(ctx context.Context, arg TransferParams) (TransferResult, error) {
+func (store *SQLStore) Transfer(ctx context.Context, arg TransferParams) (TransferResult, error) {
 	var result TransferResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
