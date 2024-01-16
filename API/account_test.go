@@ -33,7 +33,7 @@ func TestGetAccountAPI(t *testing.T) {
 			accountID: account.ID,
 			buildStubs: func(store *mockdb.MockStore) { // build the stubs for Getaccount: Expect the Getaccount() run with any context with the ID exactly 1 time
 				store.EXPECT().
-					GetAccount(gomock.Any(), gomock.Eq(account.ID)).Times(1).
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).Times(1). // expect the Getaccount with any context with the ID exactly 1 time
 					Return(account, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -93,7 +93,7 @@ func TestGetAccountAPI(t *testing.T) {
 			// build the stubs
 			tc.buildStubs(store)
 			// start the test by creating new server
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)

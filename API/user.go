@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 	"time"
 
@@ -17,6 +18,21 @@ type createUser struct {
 	Email    string `json:"email" binding:"required,email"` // check email to make sure that it's a valid email
 }
 
+type userResponse struct {
+	Username        string    `json:"username"`
+	FullName        string    `json:"full_name"`
+	Email           string    `json:"email"`
+	PasswordChanged time.Time `json:"password_changed_at"`
+	CreatedAt       time.Time `json:"created_at"`
+}
+
+func newUserResponse(user db.User) userResponse {
+	return userResponse{Username: user.Username,
+		FullName:        user.FullName,
+		Email:           user.Email,
+		PasswordChanged: user.PasswordChanged,
+		CreatedAt:       user.CreatedAt}
+}
 func (server *Server) CreateUser(ctx *gin.Context) {
 	var req createUser
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -49,13 +65,7 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	userResponse := createUserResponse{
-		Username:        user.Username,
-		FullName:        user.FullName,
-		Email:           user.Email,
-		PasswordChanged: user.PasswordChanged,
-		CreatedAt:       user.CreatedAt,
-	}
+	userResponse := newUserResponse(user)
 	ctx.JSON(http.StatusOK, userResponse)
 }
 
@@ -65,4 +75,53 @@ type createUserResponse struct { // since we will not response the hashedpasswor
 	Email           string    `json:"email"`
 	PasswordChanged time.Time `json:"password_changed"`
 	CreatedAt       time.Time `json:"created_at"`
+}
+type loginUserRequest struct {
+	Username string `json:"username" binding:"required,alphanum"` // username is required not to compose special characters
+	Password string `json:"password" binding:"required,min=6"`    // minimum password length
+}
+
+type loginUserResponse struct {
+	AcessToken string       `json:"acces_token"`
+	User       userResponse `json:"user"`
+}
+
+func (server *Server) loginUser(ctx *gin.Context) {
+	var req loginUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUser(ctx, req.Username)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	// check for the password
+	err = util.CheckPassword(req.Password, user.HashedPassword)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	accessToken, err := server.tokenMaker.CreateToken(
+		user.Username,
+		server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	respone := loginUserResponse{
+		AcessToken: accessToken,
+		User:       newUserResponse(user),
+	}
+
+	ctx.JSON(http.StatusOK, respone)
 }
