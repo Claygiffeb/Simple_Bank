@@ -7,7 +7,7 @@ import (
 )
 
 // compute the hash string of the bcrypt hash of the password
-func HashedPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	hashedpassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", fmt.Errorf("Hashed Password Failed: %w", err)

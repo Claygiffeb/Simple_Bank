@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	api "github.com/Clayagiffeb/Simple_Bank/API"
+	api "github.com/Clayagiffeb/Simple_Bank/api"
 	db "github.com/Clayagiffeb/Simple_Bank/db/sqlc"
 	"github.com/Clayagiffeb/Simple_Bank/util"
 	_ "github.com/lib/pq"
