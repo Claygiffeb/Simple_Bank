@@ -30,15 +30,27 @@ For example: The transaction transfer 10 USD form account A to account B will co
 
 Note the Step 4 and Step will require locking protocol
 
-4. Testting
+## 4. Testting
 Here we use MockDB. Mock databases are used to mimic the behavior of real databases without actually interacting with a live database system. This is advantageous in testing scenarios to ensure that tests are predictable, repeatable, and independent of external dependencies.
 
 We will use reflection mode here
 
-5. Validator
+## 5. Validator
 
 Since we don't want to hardcode the validation of requests (in the future, there might be many currency and we need to include them everywhere in the required configuration). 
 
-6. Database Migrations
+## 6. Database Migrations
  
  Since we can modify the databases many times in the future, it's not good to change the database migration files, we need to create a new migration file for each migration.
+
+## 7. Password Secure Storage
+
+For security reasons, we will hash the password and store it using BCRYPT HASH (COST,SALT) algorithm
+
+![Alt text](image-2.png)
+
+Then when the user enter the password, we will hash that password using the same algorithm with the same (COST,SALT) and compare two hash value
+
+![Alt text](image-3.png)
+
+Detail implementation in the util package (password.go) and 

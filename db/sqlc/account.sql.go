@@ -82,6 +82,7 @@ func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, e
 }
 
 const listAccounts = `-- name: ListAccounts :many
+
 SELECT id, owner, balance, currency, created_at FROM accounts
 ORDER BY id
 LIMIT $1
@@ -93,6 +94,7 @@ type ListAccountsParams struct {
 	Offset int32 `json:"offset"`
 }
 
+// Note that this is for handling Deadlocks
 func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
 	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Limit, arg.Offset)
 	if err != nil {
