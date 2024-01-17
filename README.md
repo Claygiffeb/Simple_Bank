@@ -8,7 +8,7 @@ This project provides APIs for:
 
 Technologies
 - Programming languages: Golang
-- Postgres, Redis, Gin, gRPC, Docker, Kubernetes, AWS, CI/CD
+- Postgres, Gin, Docker, CI/CD, MockDB
 
 ## 2. Services
 The service that we’re going to build is a simple bank. It will provide APIs for the frontend to do following things:
