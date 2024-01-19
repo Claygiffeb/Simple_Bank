@@ -16,6 +16,8 @@ slqc:
 	sqlc generate
 server:
 	go run main.go
+network:
+	docker network create bank-network
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/Clayagiffeb/Simple_Bank/db/sqlc Store
-.PHONY: postgres createdb  dropdb migrateup migratedown  migrateup1 migratedown1 sqlc server mock
+.PHONY: network postgres createdb  dropdb migrateup migratedown  migrateup1 migratedown1 sqlc server mock
