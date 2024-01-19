@@ -18,7 +18,7 @@ The service that we’re going to build is a simple bank. It will provide APIs f
 3. Perform a money transfer between 2 accounts. This should happen within a transaction, so that either both accounts’ balance are updated successfully or none of them are.
 
 
-## Setup local development
+## 3. Setup local development
 
 ### Install tools
 
@@ -102,11 +102,7 @@ The service that we’re going to build is a simple bank. It will provide APIs f
     make mock
     ```
 
-- Create a new db migration:
 
-    ```bash
-    make new_migration name=<migration_name>
-    ```
 
 ### How to run
 
@@ -116,3 +112,6 @@ The service that we’re going to build is a simple bank. It will provide APIs f
     make server
     ```
 
+## 4. Future features
+- Change User Password API
+- Email Verification services
